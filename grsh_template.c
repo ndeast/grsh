@@ -16,16 +16,68 @@ int main(int argc, char *argv[]){
 		batch(argv[1]); //args - batch mode
 	}
 	else{
-		error(); //error
+		//error(); //error
 	}
 	return 0;
 }
 
 void interactive(){
+	char *line;
+	char **args;
+	int status;
 	//loop infinitly
 	while(1) {
-		//your code goes here
+		printf("> ");
+		line = grsh_read_line();
+		args = grsh_split_line(line);
+		// status = grsh_execute(args);
+
+		free(line);
+		free(args);
 	}
+}
+
+char *grsh_read_line(void) {
+	char *line = NULL;
+	ssize_t buffer = 0;
+
+	if (getline(&line, &buffer, stdin) == -1) {
+		if (feof(stdin)) {
+			exit(0);
+		} else {
+			exit(1);
+		}
+	}
+	return line;
+}
+
+char **grsh_split_line(char *line) {
+	int buffer = 64, position = 0;
+	char **tokens = malloc(buffer * sizeof(char*));
+	char *token;
+
+	if (!tokens) {
+		fprintf (stderr, "grsh allocation error\n");
+		exit(1);
+	}
+
+	token = strtok(line, " \t\r\n\a");
+	while (token != NULL) {
+		tokens[position] = token;
+		position++;
+
+		if (position >= buffer) {
+			buffer += 64;
+			tokens = realloc(tokens, buffer * sizeof(char*));
+			if (!tokens) {
+				fprintf(stderr, "grsh allocation error\n");
+				exit(1);
+			}
+		}
+		token = strtok(NULL, " \t\r\n\a");
+	}
+	tokens[position] = NULL;
+	return tokens;
 }
 
 void batch(char* argument){
@@ -34,7 +86,7 @@ void batch(char* argument){
 
 	//bad file exception
 	if(fp == NULL){
-		error();
+		// error();
 		exit(1);
 	}
 
