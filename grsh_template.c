@@ -24,15 +24,24 @@ int main(int argc, char *argv[]){
 void interactive(){
 	char *line;
 	char **args;
-	int status, execFlag;
+	int status, execFlag, argLen;
 	//loop infinitly
 	while(1) {
 		printf("> ");
 		line = read_line();
 		args = parse_line(line);
-		execFlag = process_args(args);
+		//store first arg element as arglength and copy rest of values to new array
+		sscanf(args[0], "%d", &argLen);
+		char* argList[argLen]; 
+		for(int i = 0; i < argLen + 1; i++) {
+			argList[i] = args[i + 1];
+		}
+
+		execFlag = process_args(argList);
 		if (execFlag == 1) {
-			status = exec_args(args);
+			status = exec_args(argList);
+		} else if (execFlag == 2) {
+			//status = exec_args_parallel(args);
 		}
 
 		free(line);
@@ -55,21 +64,22 @@ char *read_line(void) {
 }
 
 char **parse_line(char *line) {
-	int buffer = 64, position = 0;
+	//reserve position 0 for array length
+	int buffer = 64, position = 1;
 	char **tokens = malloc(buffer * sizeof(char*));
 	char *token;
+	char str[10];
 
 	if (!tokens) {
 		fprintf (stderr, "grsh allocation error\n");
 		exit(1);
 	}
-
+	tokens[0] = "0"; //store placeholder in token array
 	token = strtok(line, " \t\r\n\a");
 	while (token != NULL) {
 		tokens[position] = token;
 		position++;
-
-		if (position >= buffer) {
+		if (position - 1 >= buffer) {
 			buffer += 64;
 			tokens = realloc(tokens, buffer * sizeof(char*));
 			if (!tokens) {
@@ -79,6 +89,8 @@ char **parse_line(char *line) {
 		}
 		token = strtok(NULL, " \t\r\n\a");
 	}
+	sprintf(str, "%d", position - 1); //convert position to a string
+	tokens[0] = str;
 	tokens[position] = NULL;
 	return tokens;
 }
@@ -99,6 +111,7 @@ int exec_args(char** args) {
 		return 1;
 	}
 }
+
 
 int builtin_handler(char** args) {
 	int numCmds = 3, i, y = 0;
