@@ -37,11 +37,11 @@ void interactive(){
 			argList[i] = args[i + 1];
 		}
 
-		execFlag = process_args(argList);
+		execFlag = process_args(argList, argLen);
 		if (execFlag == 1) {
 			status = exec_args(argList);
 		} else if (execFlag == 2) {
-			//status = exec_args_parallel(args);
+			printf("parallel args\n");
 		}
 
 		free(line);
@@ -149,7 +149,29 @@ int builtin_handler(char** args) {
 
 }
 
-int process_args(char** args) {
+int parse_And(char** args, int argLen) {
+	int i;
+	char** strAnd;
+	for (i = 0; i < argLen; i++) {
+		if (args[i] == "&") {
+			strAnd[i] = args[i];
+		}
+		if (strAnd[i] == NULL) {
+			break;
+		}
+		if (strAnd[argLen] == NULL) {
+			return 0;
+		} else {
+			return 1;
+		}
+	}
+}
+
+int process_args(char** args, int argLen) {
+	if (parse_And(args, argLen)) {
+		return 2;
+	}
+
 	if (builtin_handler(args)) {
 		return 0;
 	} else {
