@@ -28,16 +28,16 @@ void interactive(){
 	//loop infinitly
 	while(1) {
 		printf("> ");
-		line = grsh_read_line();
-		args = grsh_split_line(line);
-		// status = grsh_execute(args);
+		line = read_line();
+		args = parse_line(line);
+		status = exec_args(args);
 
 		free(line);
 		free(args);
 	}
 }
 
-char *grsh_read_line(void) {
+char *read_line(void) {
 	char *line = NULL;
 	ssize_t buffer = 0;
 
@@ -51,7 +51,7 @@ char *grsh_read_line(void) {
 	return line;
 }
 
-char **grsh_split_line(char *line) {
+char **parse_line(char *line) {
 	int buffer = 64, position = 0;
 	char **tokens = malloc(buffer * sizeof(char*));
 	char *token;
@@ -78,6 +78,23 @@ char **grsh_split_line(char *line) {
 	}
 	tokens[position] = NULL;
 	return tokens;
+}
+
+int exec_args(char** args) {
+	//fork a chile
+	pid_t pid = fork();
+
+	if (pid == 0) {
+		if (execvp(args[0], args) < 0) {
+			printf("\nCould not execute command\n");
+		}
+		exit(0);
+	} else if (pid == -1) {
+		printf("\nFailed To Fork");
+	} else {
+		wait(NULL);
+		return 1;
+	}
 }
 
 void batch(char* argument){
