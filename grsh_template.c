@@ -24,13 +24,16 @@ int main(int argc, char *argv[]){
 void interactive(){
 	char *line;
 	char **args;
-	int status;
+	int status, execFlag;
 	//loop infinitly
 	while(1) {
 		printf("> ");
 		line = read_line();
 		args = parse_line(line);
-		status = exec_args(args);
+		execFlag = process_args(args);
+		if (execFlag == 1) {
+			status = exec_args(args);
+		}
 
 		free(line);
 		free(args);
@@ -97,7 +100,51 @@ int exec_args(char** args) {
 	}
 }
 
-void batch(char* argument){
+int builtin_handler(char** args) {
+	int numCmds = 3, i, y = 0;
+	char* CmdList[numCmds];
+	char cwd[1024];
+
+	CmdList[0] = "exit";
+	CmdList[1] = "cd";
+	CmdList[2] = "path";
+
+	for (i = 0; i < numCmds; i++) {
+		if (strcmp(args[0], CmdList[i]) == 0) {
+			y = i + 1;
+			break;
+		}
+	}
+
+	switch (y) {
+		case 1:
+			printf("\nExiting\n");
+			exit(0);
+		case 2:
+			chdir(args[1]);
+			getcwd(cwd, sizeof(cwd));
+			printf("Current Dir: %s\n", cwd);
+			return 1;
+		case 3:
+			getcwd(cwd, sizeof(cwd));
+			printf("Current Dir: %s\n", cwd);
+			return 1;
+		default:
+			break;
+	}
+	return 0;
+
+}
+
+int process_args(char** args) {
+	if (builtin_handler(args)) {
+		return 0;
+	} else {
+		return 1;
+	} 
+}
+
+void batch(char* argument) {
 	int redirect = 1;
 	FILE *fp = fopen(argument, "r");
 
