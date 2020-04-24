@@ -3,9 +3,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdbool.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+bool is_and = false;
+bool is_redirect = false;
 
 int main(int argc, char *argv[]){
 
@@ -41,7 +45,7 @@ void interactive(){
 		if (execFlag == 1) {
 			status = exec_args(argList);
 		} else if (execFlag == 2) {
-			printf("parallel args\n");
+			printf("\nparallel args\n");
 		}
 
 		free(line);
@@ -87,11 +91,16 @@ char **parse_line(char *line) {
 				exit(1);
 			}
 		}
+		if(strcmp(token, "&") == 0) {
+			is_and = true;
+		}
 		token = strtok(NULL, " \t\r\n\a");
 	}
 	sprintf(str, "%d", position - 1); //convert position to a string
 	tokens[0] = str;
 	tokens[position] = NULL;
+
+
 	return tokens;
 }
 
@@ -131,7 +140,7 @@ int builtin_handler(char** args) {
 
 	switch (y) {
 		case 1:
-			printf("\nExiting\n");
+			printf("Exiting\n");
 			exit(0);
 		case 2:
 			chdir(args[1]);
@@ -149,29 +158,35 @@ int builtin_handler(char** args) {
 
 }
 
-int parse_And(char** args, int argLen) {
-	int i;
-	char** strAnd;
-	for (i = 0; i < argLen; i++) {
-		if (args[i] == "&") {
-			strAnd[i] = args[i];
-		}
-		if (strAnd[i] == NULL) {
-			break;
-		}
-		if (strAnd[argLen] == NULL) {
-			return 0;
-		} else {
-			return 1;
-		}
-	}
+static void parse_And(char *left[], char *right[], char **args) {
+  int a, b;
+  printf("parse and\n");
+  for (a = 0; *args[a] != '&'; a++) {
+	left[a]= args[a];
+	printf("left cmd: %s\n", left[a]);
+  }
+  left[a++] = '\0';
+  for (b = 0; *args[a] != '&', args[a] != NULL; a++, b++) {
+	right[b] = args[a];
+	printf("right cmd: %s\n", right[b]);
+  }
+  right[b] = '\0';
+}
+
+int handle_And(char **args) {
+	char *left[20], *right[20];
+	printf("left and right\n");
+	parse_And(left, right, args);
+	is_and = false;
+	printf("made it\n");
+	return 1;
 }
 
 int process_args(char** args, int argLen) {
-	if (parse_And(args, argLen)) {
-		return 2;
+	if (is_and) {
+		printf("is and\n");
+		int status = handle_And(args);
 	}
-
 	if (builtin_handler(args)) {
 		return 0;
 	} else {
