@@ -8,4 +8,5 @@ char *read_line(void);
 int exec_args(char** args);
 int process_args(char** args, int argLen);
 static void parse_And(char *left[], char *right[], char **args);
+static void exec_args_parallel(char *args[]);
 #endif

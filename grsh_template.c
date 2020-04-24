@@ -105,7 +105,7 @@ char **parse_line(char *line) {
 }
 
 int exec_args(char** args) {
-	//fork a chile
+	//fork a child
 	pid_t pid = fork();
 
 	if (pid == 0) {
@@ -121,6 +121,19 @@ int exec_args(char** args) {
 	}
 }
 
+static void exec_args_parallel(char *args[]) {
+	//fork a child
+	pid_t pid = fork();
+
+	if (pid == 0) {
+		if (execvp(args[0], args) < 0) {
+			printf("\nCould not execute command\n");
+		}
+	} else if (pid == -1) {
+		printf("\nFailed To Fork");
+	}
+	return;
+}
 
 int builtin_handler(char** args) {
 	int numCmds = 3, i, y = 0;
@@ -145,7 +158,7 @@ int builtin_handler(char** args) {
 		case 2:
 			chdir(args[1]);
 			getcwd(cwd, sizeof(cwd));
-			printf("Current Dir: %s\n", cwd);
+			// printf("Current Dir: %s\n", cwd);
 			return 1;
 		case 3:
 			getcwd(cwd, sizeof(cwd));
@@ -160,7 +173,6 @@ int builtin_handler(char** args) {
 
 static void parse_And(char *left[], char *right[], char **args) {
   int a, b;
-  printf("parse and\n");
   for (a = 0; *args[a] != '&'; a++) {
 	left[a]= args[a];
 	printf("left cmd: %s\n", left[a]);
@@ -174,11 +186,21 @@ static void parse_And(char *left[], char *right[], char **args) {
 }
 
 int handle_And(char **args) {
+	int status;
 	char *left[20], *right[20];
-	printf("left and right\n");
 	parse_And(left, right, args);
 	is_and = false;
-	printf("made it\n");
+	if(!builtin_handler(left)) {
+		exec_args_parallel(left);
+	}
+	if(!builtin_handler(right)) {
+		exec_args_parallel(right);
+	}
+	do {
+		status = wait(NULL);
+	} while (status > 0);
+
+	
 	return 1;
 }
 
@@ -186,6 +208,10 @@ int process_args(char** args, int argLen) {
 	if (is_and) {
 		printf("is and\n");
 		int status = handle_And(args);
+		if (status == 1) {
+			printf("success\n");
+			return 0;
+		}
 	}
 	if (builtin_handler(args)) {
 		return 0;
