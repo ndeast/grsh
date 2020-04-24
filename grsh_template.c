@@ -171,45 +171,68 @@ int builtin_handler(char** args) {
 
 }
 
-static void parse_And(char *left[], char *right[], char **args) {
-  int a, b;
-  for (a = 0; *args[a] != '&'; a++) {
-	left[a]= args[a];
-	printf("left cmd: %s\n", left[a]);
-  }
-  left[a++] = '\0';
-  for (b = 0; *args[a] != '&', args[a] != NULL; a++, b++) {
-	right[b] = args[a];
-	printf("right cmd: %s\n", right[b]);
-  }
-  right[b] = '\0';
+static void parse_And(char *cmd1[], char *cmd2[], char *cmd3[], char **args) {
+	int a, b, c;
+	for (a = 0; *args[a] != '&'; a++) {
+		cmd1[a]= args[a];
+		printf("cmd1: %s\n", cmd1[a]);
+	}
+	printf("a1: %d\n", a);
+	cmd1[a++] = '\0';
+	printf("a2: %d\n", a);
+
+	for (b = 0; *args[a] != '&', args[a] != NULL; a++, b++) {
+		cmd2[b] = args[a];
+		printf("cmd2: %s\n", cmd2[b]);
+	}
+	cmd2[b] = '\0';
+
+	printf("args[%d]: %s\n", a, args[a]);
+
+	if (args[a] != NULL) {
+		printf("not null");
+		a++;
+		
+		for (c = 0; *args[a] != '&', args[a] != NULL; a++, c++) {
+			cmd3[c] = args[a];
+			printf("cmd3: %s\n", cmd3[c]);
+	}
+	cmd3[c] = '\0';
+
+	} else {
+		cmd3[0] = NULL;
+	}
+
+	
+  
 }
 
 int handle_And(char **args) {
 	int status;
-	char *left[20], *right[20];
-	parse_And(left, right, args);
+	char *cmd1[20], *cmd2[20], *cmd3[20];
+	parse_And(cmd1, cmd2, cmd3, args);
 	is_and = false;
-	if(!builtin_handler(left)) {
-		exec_args_parallel(left);
+	if(cmd1[0] != NULL && !builtin_handler(cmd1)) {
+		exec_args_parallel(cmd1);
 	}
-	if(!builtin_handler(right)) {
-		exec_args_parallel(right);
+	if(cmd2[0] != NULL && !builtin_handler(cmd2)) {
+		exec_args_parallel(cmd2);
+	}
+	if(cmd3[0] != NULL && !builtin_handler(cmd3)) {
+		printf("not null2");
+		exec_args_parallel(cmd3);
 	}
 	do {
 		status = wait(NULL);
 	} while (status > 0);
 
-	
 	return 1;
 }
 
 int process_args(char** args, int argLen) {
 	if (is_and) {
-		printf("is and\n");
 		int status = handle_And(args);
 		if (status == 1) {
-			printf("success\n");
 			return 0;
 		}
 	}
