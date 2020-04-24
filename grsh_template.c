@@ -175,36 +175,27 @@ static void parse_And(char *cmd1[], char *cmd2[], char *cmd3[], char **args) {
 	int a, b, c;
 	for (a = 0; *args[a] != '&'; a++) {
 		cmd1[a]= args[a];
-		printf("cmd1: %s\n", cmd1[a]);
 	}
-	printf("a1: %d\n", a);
 	cmd1[a++] = '\0';
-	printf("a2: %d\n", a);
 
-	for (b = 0; *args[a] != '&', args[a] != NULL; a++, b++) {
-		cmd2[b] = args[a];
-		printf("cmd2: %s\n", cmd2[b]);
+	for (b = 0; args[a] != NULL; a++, b++) {
+		if(*args[a] != '&') {
+			cmd2[b] = args[a];
+		} else {
+			break;
+		}	
 	}
 	cmd2[b] = '\0';
 
-	printf("args[%d]: %s\n", a, args[a]);
-
 	if (args[a] != NULL) {
-		printf("not null");
 		a++;
-		
-		for (c = 0; *args[a] != '&', args[a] != NULL; a++, c++) {
+		for (c = 0; args[a] != NULL; a++, c++) {
 			cmd3[c] = args[a];
-			printf("cmd3: %s\n", cmd3[c]);
-	}
-	cmd3[c] = '\0';
-
+		}
+		cmd3[c] = '\0';
 	} else {
 		cmd3[0] = NULL;
 	}
-
-	
-  
 }
 
 int handle_And(char **args) {
@@ -219,7 +210,6 @@ int handle_And(char **args) {
 		exec_args_parallel(cmd2);
 	}
 	if(cmd3[0] != NULL && !builtin_handler(cmd3)) {
-		printf("not null2");
 		exec_args_parallel(cmd3);
 	}
 	do {
