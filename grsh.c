@@ -129,6 +129,9 @@ char **parse_line(char *line) {
 		if(strcmp(token, "&") == 0) {
 			is_and = true;
 		}
+		if(strcmp(token, ">") == 0) {
+			is_redirect = true;
+		}
 		token = strtok(NULL, " \t\r\n\a");
 	}
 	sprintf(str, "%d", position - 1); //convert position to a string
