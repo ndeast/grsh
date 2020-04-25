@@ -53,6 +53,45 @@ void interactive(){
 	}
 }
 
+void batch(char* argument) {
+	int redirect = 1;
+	char **args;
+	char *line = NULL;
+	size_t len = 0;
+	ssize_t read;
+	int status, execFlag, argLen;
+	FILE *fp = fopen(argument, "r");
+
+	//bad file exception
+	if(fp == NULL){
+		// error();
+		exit(1);
+	}
+
+    while ((read = getline(&line, &len, fp)) != -1) {
+		args = parse_line(line);
+		//store first arg element as arglength and copy rest of values to new array
+		sscanf(args[0], "%d", &argLen);
+		char* argList[argLen]; 
+		for(int i = 0; i < argLen + 1; i++) {
+			argList[i] = args[i + 1];
+		}
+
+		execFlag = process_args(argList, argLen);
+		if (execFlag == 1) {
+			status = exec_args(argList);
+		} else if (execFlag == 2) {
+			printf("\nparallel args\n");
+		}
+    }
+
+    fclose(fp);
+    if (line)
+        free(line);
+    exit(EXIT_SUCCESS);
+	exit(0); //exit once end of file is reached
+}
+
 char *read_line(void) {
 	char *line = NULL;
 	ssize_t buffer = 0;
@@ -231,26 +270,4 @@ int process_args(char** args, int argLen) {
 	} else {
 		return 1;
 	} 
-}
-
-void batch(char* argument) {
-	int redirect = 1;
-	FILE *fp = fopen(argument, "r");
-
-	//bad file exception
-	if(fp == NULL){
-		// error();
-		exit(1);
-	}
-
-	while(!feof(fp)){
-		char* buffer = malloc(sizeof(char)*128);
-		fgets(buffer,sizeof(buffer)*128,fp);
-		buffer[strlen(buffer) -1] = '\0';
-		char *args[sizeof(buffer)];
-
-		// your code goes here
-
-	}
-	exit(0); //exit once end of file is reached
 }
