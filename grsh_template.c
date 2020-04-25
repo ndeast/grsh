@@ -44,8 +44,6 @@ void interactive(){
 		execFlag = process_args(argList, argLen);
 		if (execFlag == 1) {
 			status = exec_args(argList);
-		} else if (execFlag == 2) {
-			printf("\nparallel args\n");
 		}
 
 		free(line);
@@ -80,15 +78,11 @@ void batch(char* argument) {
 		execFlag = process_args(argList, argLen);
 		if (execFlag == 1) {
 			status = exec_args(argList);
-		} else if (execFlag == 2) {
-			printf("\nparallel args\n");
-		}
-    }
-
+    	}
+	}
     fclose(fp);
     if (line)
         free(line);
-    exit(EXIT_SUCCESS);
 	exit(0); //exit once end of file is reached
 }
 
@@ -114,7 +108,8 @@ char **parse_line(char *line) {
 	char str[10];
 
 	if (!tokens) {
-		fprintf (stderr, "grsh allocation error\n");
+		char error_message[30] = "An error has occurred\n";
+  		write(STDERR_FILENO, error_message, strlen(error_message));
 		exit(1);
 	}
 	tokens[0] = "0"; //store placeholder in token array
@@ -126,7 +121,8 @@ char **parse_line(char *line) {
 			buffer += 64;
 			tokens = realloc(tokens, buffer * sizeof(char*));
 			if (!tokens) {
-				fprintf(stderr, "grsh allocation error\n");
+				char error_message[30] = "An error has occurred\n";
+  				write(STDERR_FILENO, error_message, strlen(error_message));
 				exit(1);
 			}
 		}
@@ -149,11 +145,14 @@ int exec_args(char** args) {
 
 	if (pid == 0) {
 		if (execvp(args[0], args) < 0) {
-			printf("\nCould not execute command\n");
+			char error_message[30] = "An error has occurred\n";
+  			write(STDERR_FILENO, error_message, strlen(error_message));
 		}
 		exit(0);
 	} else if (pid == -1) {
-		printf("\nFailed To Fork");
+		char error_message[30] = "An error has occurred\n";
+ 		write(STDERR_FILENO, error_message, strlen(error_message));
+
 	} else {
 		wait(NULL);
 		return 1;
@@ -166,10 +165,14 @@ static void exec_args_parallel(char *args[]) {
 
 	if (pid == 0) {
 		if (execvp(args[0], args) < 0) {
-			printf("\nCould not execute command\n");
+			char error_message[30] = "An error has occurred\n";
+  			write(STDERR_FILENO, error_message, strlen(error_message));
+
 		}
 	} else if (pid == -1) {
-		printf("\nFailed To Fork");
+		char error_message[30] = "An error has occurred\n";
+  		write(STDERR_FILENO, error_message, strlen(error_message));
+
 	}
 	return;
 }
