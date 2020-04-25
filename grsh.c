@@ -1,4 +1,4 @@
-#include "grsh_template.h"
+#include "grsh.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

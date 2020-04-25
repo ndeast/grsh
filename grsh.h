@@ -1,5 +1,5 @@
-#ifndef GRSH_TEMPLATE
-#define GRSH_TEMPLATE
+#ifndef GRSH
+#define GRSH
 
 void interactive();
 void batch(char* argument);
