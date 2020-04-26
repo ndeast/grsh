@@ -20,7 +20,8 @@ int main(int argc, char *argv[]){
 		batch(argv[1]); //args - batch mode
 	}
 	else{
-		//error(); //error
+		char error_message[30] = "An error has occurred\n";
+  		write(STDERR_FILENO, error_message, strlen(error_message));
 	}
 	return 0;
 }
