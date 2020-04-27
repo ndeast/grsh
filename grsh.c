@@ -32,7 +32,7 @@ void interactive(){
 	int status, execFlag, argLen;
 	//loop infinitly
 	while(1) {
-		printf("> ");
+		printf("grsh> ");
 		line = read_line();
 		args = parse_line(line);
 		//store first arg element as arglength and copy rest of values to new array
@@ -199,7 +199,6 @@ int builtin_handler(char** args) {
 
 	switch (y) {
 		case 1:
-			printf("Exiting\n");
 			exit(0);
 		case 2:
 			chdir(args[1]);
@@ -208,7 +207,7 @@ int builtin_handler(char** args) {
 			return 1;
 		case 3:
 			getcwd(cwd, sizeof(cwd));
-			printf("Current Dir: %s\n", cwd);
+			//printf("Current Dir: %s\n", cwd);
 			return 1;
 		default:
 			break;
